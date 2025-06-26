@@ -1,35 +1,24 @@
 import React from "react"
-import { useParams, Link, Outlet, NavLink } from "react-router-dom"
+import { useParams, Link, Outlet, NavLink, useLoaderData} from "react-router-dom"
 import { OrbitProgress } from "react-loading-indicators"
+import { getHostVans } from "../../api"
+import { requiresAuth } from "../../utils"
+
+export async function loader({params}){
+    await requiresAuth();
+    return getHostVans(params.id);
+}
 
 export default function HostVanDetail() {
-    const { id } = useParams()
-    const [currentVan, setCurrentVan] = React.useState(null)
     const activeStyles = {
         fontWeight : "bold",
         textDecoration : "underline",
         color : "#161616"
     }
-    React.useEffect(() => {
-        fetch(`/api/host/vans/${id}`)
-            .then(res => res.json())
-            .then(data => setCurrentVan(data.vans))
-    }, [])
+    const currentVan = useLoaderData();
 
-    if(!currentVan){
-        return (
-            <div className="loading-bar-container">
-                <OrbitProgress color="#32cd32" size="medium" text="" textColor="" className="loading-bar" />
-            </div>
-        )
-    }
     return (
         <section>
-            {/* <Link
-                to=".."
-                relative="path"
-                className="back-button"
-            >&larr; <span>Back to all vans</span></Link> */}
 
             <Link
                 to = ".." //.. takes back us to parent route, whichin this case is host that's why we have to use realtive
@@ -72,7 +61,8 @@ export default function HostVanDetail() {
                         Photos</NavLink>
                 </nav>
 
-            <Outlet/>
+
+            <Outlet context = {{currentVan: currentVan}}/>
             </div>
 
         </section>
