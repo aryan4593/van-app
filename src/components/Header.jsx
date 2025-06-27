@@ -9,9 +9,10 @@ export default function Header() {
     }
      function fakeLogOut() {
         localStorage.removeItem("loggedin")
+        window.location.reload();
         
     }
-    
+    const isLoggedIn = localStorage.getItem("loggedin");
     return (
         <header>
             <Link className="site-logo" to="/">#VanLife</Link>
@@ -34,13 +35,16 @@ export default function Header() {
                 >
                     Vans
                 </NavLink>
+                {
+                    !isLoggedIn ? 
                 <Link to="login" className="login-link">
                     <img 
                         src={loginLogo}
                         className="login-icon"
                     />
-                </Link>
-              <button onClick={fakeLogOut}>X</button>
+                </Link> :
+                 <button onClick={fakeLogOut}>X</button>
+                }
             </nav>
         </header>
     )

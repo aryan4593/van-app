@@ -1,12 +1,11 @@
-import React from "react"
-import { useParams, Link, Outlet, NavLink, useLoaderData} from "react-router-dom"
-import { OrbitProgress } from "react-loading-indicators"
+import React, {Suspense} from "react"
+import { useParams, Link, Outlet, NavLink, useLoaderData, Await} from "react-router-dom"
 import { getHostVans } from "../../api"
 import { requiresAuth } from "../../utils"
-
-export async function loader({params}){
-    await requiresAuth();
-    return getHostVans(params.id);
+import LoadingComp from './../../components/LoadingComp.jsx';
+export async function loader({params,request}){
+    await requiresAuth(request);
+    return {currentVan:getHostVans(params.id)};
 }
 
 export default function HostVanDetail() {
@@ -15,19 +14,12 @@ export default function HostVanDetail() {
         textDecoration : "underline",
         color : "#161616"
     }
-    const currentVan = useLoaderData();
+    const dataPromise = useLoaderData();
 
-    return (
-        <section>
-
-            <Link
-                to = ".." //.. takes back us to parent route, whichin this case is host that's why we have to use realtive
-                relative="path"
-                className="back-button"
-            >
-               <span>&larr;</span> Back to all vans
-            </Link>
-
+    function vanElement(currentVan){
+        return(
+            <>
+                
             <div className="host-van-detail-layout-container">
                 <div className="host-van-detail">
                     <img src={currentVan.imageUrl} />
@@ -64,6 +56,26 @@ export default function HostVanDetail() {
 
             <Outlet context = {{currentVan: currentVan}}/>
             </div>
+            </>
+        )
+    }
+    return (
+        <section>
+
+            <Link
+                to = ".." //.. takes back us to parent route, whichin this case is host that's why we have to use realtive
+                relative="path"
+                className="back-button"
+            >
+               <span>&larr;</span> Back to all vans
+            </Link>
+
+            <Suspense fallback= {<LoadingComp/>}>
+
+                <Await resolve={dataPromise.currentVan}>
+                    {vanElement}
+                </Await>
+            </Suspense>
 
         </section>
     )
